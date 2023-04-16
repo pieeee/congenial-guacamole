@@ -22,12 +22,29 @@ app.post("/verify-domain", async (req, res) => {
   } catch (error) {
     try {
       await axios.get(`http://${req.body.domain}/whoami`);
-      res.status(200).json({ message: "Domain is pointed but no SSL found!" });
+      generateSSl(req.body.domain, res);
     } catch (error) {
       res.status(400).json({ message: "Domain is not pointed!" });
     }
   }
 });
+
+const generateSSl = (domain, res) => {
+  const email = "ahnafurp@gmail.com"; // change to your email address
+
+  const command = `sudo certbot --nginx -d ${domain} --non-interactive --agree-tos -m ${email}`;
+
+  exec(command, (error, stdout, stderr) => {
+    if (error) {
+      console.error(`exec error: ${error}`);
+      res.status(500).json({ error: "Failed to generate SSL certificate." });
+      return;
+    }
+    console.log(`stdout: ${stdout}`);
+    console.error(`stderr: ${stderr}`);
+    res.json({ message: "SSL certificate generated successfully." });
+  });
+};
 
 app.post("/generate-ssl", (req, res) => {
   const domain = req.body.domain;
