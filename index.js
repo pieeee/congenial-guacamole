@@ -17,13 +17,15 @@ app.get("/whoami", (req, res) => {
 
 app.post("/verify-domain", async (req, res) => {
   try {
-    const { status } = await axios.get(`http://${req.body.domain}/whoami`);
-    if (status === 200) {
-      res.status(200).json({ message: "Domain is pointed!" });
-    }
-    res.status(400).json({ message: "Domain is not pointed!" });
+    await axios.get(`https://${req.body.domain}/whoami`);
+    res.status(200).json({ message: "Domain is pointed with SSL!" });
   } catch (error) {
-    res.status(400).json({ message: "Domain is not pointed!" });
+    try {
+      await axios.get(`http://${req.body.domain}/whoami`);
+      res.status(200).json({ message: "Domain is pointed but no SSL found!" });
+    } catch (error) {
+      res.status(400).json({ message: "Domain is not pointed!" });
+    }
   }
 });
 
